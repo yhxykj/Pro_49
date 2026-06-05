@@ -42,6 +42,7 @@ enum AuthFormMode {
 final class AuthFormCardView: UIView {
     var backHandler: (() -> Void)?
     var createAccountHandler: (() -> Void)?
+    var registrationCompleteHandler: (() -> Void)?
     var agreementMissingHandler: (() -> Void)?
 
     private let mode: AuthFormMode
@@ -147,8 +148,8 @@ final class AuthFormCardView: UIView {
         cardView.addSubview(primaryButton)
 
         NSLayoutConstraint.activate([
-            backButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 58),
-            backButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 43),
+            backButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10),
+            backButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             backButton.widthAnchor.constraint(equalToConstant: 32),
             backButton.heightAnchor.constraint(equalToConstant: 32),
 
@@ -199,6 +200,8 @@ final class AuthFormCardView: UIView {
 
         if mode == .login {
             createAccountHandler?()
+        } else {
+            registrationCompleteHandler?()
         }
     }
 

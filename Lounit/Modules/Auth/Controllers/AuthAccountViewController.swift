@@ -60,6 +60,10 @@ final class AuthAccountViewController: UIViewController {
             self?.navigationController?.pushViewController(AuthAccountViewController(mode: .register), animated: true)
         }
 
+        formCardView.registrationCompleteHandler = { [weak self] in
+            self?.navigationController?.pushViewController(ProfileSetupViewController(), animated: true)
+        }
+
         formCardView.agreementMissingHandler = { [weak self] in
             self?.showAgreementAlert()
         }
