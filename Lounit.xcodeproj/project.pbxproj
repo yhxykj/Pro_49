@@ -56,7 +56,6 @@
 				C320405FF6EF01A8EA599D51 /* Pods-Lounit.debug.xcconfig */,
 				93F2508B53660F0D724EAE49 /* Pods-Lounit.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -196,12 +195,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = JPTS6M4T5B;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Lounit/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Lounit\nLounit";
+				INFOPLIST_KEY_CFBundleDisplayName = "Omeagle\nLounit";
+				INFOPLIST_KEY_NSCameraUsageDescription = "The app requires your permission to access the camera and to have video chats with friends.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The app requires your permission to access the voice function and to have voice chats with friends.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app requires your consent to access the photo album. You can select photos to post updates and modify your profile picture.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -213,8 +215,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = im.seex.lobo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omeagle.wymfs;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
@@ -234,12 +237,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = JPTS6M4T5B;
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Lounit/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Lounit\nLounit";
+				INFOPLIST_KEY_CFBundleDisplayName = "Omeagle\nLounit";
+				INFOPLIST_KEY_NSCameraUsageDescription = "The app requires your permission to access the camera and to have video chats with friends.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The app requires your permission to access the voice function and to have voice chats with friends.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app requires your consent to access the photo album. You can select photos to post updates and modify your profile picture.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -251,8 +257,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = im.seex.lobo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omeagle.wymfs;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;

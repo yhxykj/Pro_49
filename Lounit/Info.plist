@@ -2,12 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSCameraUsageDescription</key>
-	<string>Allow camera access to create and preview your live room.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Allow microphone access so viewers can hear your live room.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Select photos to update your avatar, publish posts, and create live room covers.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>Omeagle_01</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>Omeagle_01</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
