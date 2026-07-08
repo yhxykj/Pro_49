@@ -26,7 +26,9 @@ final class HomeCityCollectionViewCell: UICollectionViewCell {
         setupView()
     }
 
-    func configure(with city: HomeCity) {
+    func configure(with city: ExploreCity) {
+        cityImageView.image = UIImage(named: city.listImageName)?.withRenderingMode(.alwaysOriginal)
+            ?? UIImage(named: "ExploreHeroImage")?.withRenderingMode(.alwaysOriginal)
         titleLabel.text = city.name
     }
 
@@ -40,7 +42,7 @@ final class HomeCityCollectionViewCell: UICollectionViewCell {
         imageContainerView.clipsToBounds = true
         imageContainerView.translatesAutoresizingMaskIntoConstraints = false
 
-        cityImageView.image = UIImage(named: "AuthCityBackground")?.withRenderingMode(.alwaysOriginal)
+        cityImageView.image = UIImage(named: "ExploreHeroImage")?.withRenderingMode(.alwaysOriginal)
         cityImageView.contentMode = .scaleAspectFill
         cityImageView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -55,6 +57,7 @@ final class HomeCityCollectionViewCell: UICollectionViewCell {
 
         arrowButton.setImage(UIImage(named: "HomeCityArrow")?.withRenderingMode(.alwaysOriginal), for: .normal)
         arrowButton.imageView?.contentMode = .scaleAspectFit
+        arrowButton.isUserInteractionEnabled = false
         arrowButton.translatesAutoresizingMaskIntoConstraints = false
 
         contentView.addSubview(imageContainerView)

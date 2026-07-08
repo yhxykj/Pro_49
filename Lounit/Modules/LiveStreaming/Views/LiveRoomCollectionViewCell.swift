@@ -5,11 +5,18 @@
 //  Created by Codex on 2026/6/5.
 //
 
+import AVFoundation
 import UIKit
 
 struct LiveRoom {
     let title: String
     let imageName: String
+    let videoFileName: String
+    let hostName: String
+    let hostAvatarImageName: String
+    let category: String
+    let viewerCountText: String
+    let viewerAvatarImageNames: [String]
 }
 
 final class LiveRoomCollectionViewCell: UICollectionViewCell {
@@ -23,6 +30,8 @@ final class LiveRoomCollectionViewCell: UICollectionViewCell {
     private let exploreLabel = UILabel()
     private let titleBackgroundView = UIView()
     private let titleLabel = UILabel()
+    private let metaLabel = UILabel()
+    private static var thumbnailCache: [String: UIImage] = [:]
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -43,7 +52,36 @@ final class LiveRoomCollectionViewCell: UICollectionViewCell {
 
     func configure(with room: LiveRoom) {
         titleLabel.text = room.title
-        cityImageView.image = UIImage(named: room.imageName)?.withRenderingMode(.alwaysOriginal)
+        metaLabel.text = "\(room.hostName) · \(room.viewerCountText) watching"
+        exploreLabel.text = room.category
+        avatarImageView.image = UIImage(named: room.hostAvatarImageName)?.withRenderingMode(.alwaysOriginal)
+        cityImageView.image = Self.videoThumbnail(for: room.videoFileName)
+            ?? UIImage(named: room.imageName)?.withRenderingMode(.alwaysOriginal)
+    }
+
+    private static func videoThumbnail(for fileName: String) -> UIImage? {
+        if let cachedImage = thumbnailCache[fileName] {
+            return cachedImage
+        }
+
+        guard let videoURL = Bundle.main.url(forResource: fileName, withExtension: "mp4")
+            ?? Bundle.main.url(forResource: fileName, withExtension: "mp4", subdirectory: "Video")
+        else {
+            return nil
+        }
+
+        let asset = AVAsset(url: videoURL)
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = CGSize(width: 360, height: 360)
+
+        guard let cgImage = try? generator.copyCGImage(at: .zero, actualTime: nil) else {
+            return nil
+        }
+
+        let image = UIImage(cgImage: cgImage)
+        thumbnailCache[fileName] = image
+        return image
     }
 
     private func setupView() {
@@ -68,24 +106,30 @@ final class LiveRoomCollectionViewCell: UICollectionViewCell {
         exploreChipView.clipsToBounds = true
         exploreChipView.translatesAutoresizingMaskIntoConstraints = false
 
-        avatarImageView.image = UIImage(named: "LoginMascot")?.withRenderingMode(.alwaysOriginal)
+        avatarImageView.image = UIImage(named: "UserAvatar01")?.withRenderingMode(.alwaysOriginal)
         avatarImageView.contentMode = .scaleAspectFill
         avatarImageView.clipsToBounds = true
         avatarImageView.translatesAutoresizingMaskIntoConstraints = false
 
-        exploreLabel.text = "Explore"
-        exploreLabel.textColor = .white
-        exploreLabel.font = .systemFont(ofSize: 16, weight: .semibold)
+        exploreLabel.textColor = UIColor(white: 0.12, alpha: 0.86)
+        exploreLabel.font = .systemFont(ofSize: 14, weight: .semibold)
         exploreLabel.translatesAutoresizingMaskIntoConstraints = false
 
         titleBackgroundView.backgroundColor = UIColor(red: 0.83, green: 0.93, blue: 1.0, alpha: 1)
         titleBackgroundView.translatesAutoresizingMaskIntoConstraints = false
 
         titleLabel.textColor = UIColor(white: 0.1, alpha: 1)
-        titleLabel.font = .systemFont(ofSize: 16, weight: .regular)
+        titleLabel.font = .systemFont(ofSize: 15, weight: .semibold)
         titleLabel.numberOfLines = 2
         titleLabel.lineBreakMode = .byWordWrapping
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        metaLabel.textColor = UIColor(white: 0.32, alpha: 1)
+        metaLabel.font = .systemFont(ofSize: 12, weight: .medium)
+        metaLabel.numberOfLines = 1
+        metaLabel.adjustsFontSizeToFitWidth = true
+        metaLabel.minimumScaleFactor = 0.78
+        metaLabel.translatesAutoresizingMaskIntoConstraints = false
     }
 
     private func setupLayout() {
@@ -98,6 +142,7 @@ final class LiveRoomCollectionViewCell: UICollectionViewCell {
         exploreChipView.addSubview(avatarImageView)
         exploreChipView.addSubview(exploreLabel)
         titleBackgroundView.addSubview(titleLabel)
+        titleBackgroundView.addSubview(metaLabel)
 
         NSLayoutConstraint.activate([
             cardView.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -122,7 +167,7 @@ final class LiveRoomCollectionViewCell: UICollectionViewCell {
 
             exploreChipView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 8),
             exploreChipView.bottomAnchor.constraint(equalTo: cityImageView.bottomAnchor, constant: -8),
-            exploreChipView.widthAnchor.constraint(equalToConstant: 84),
+            exploreChipView.widthAnchor.constraint(equalToConstant: 104),
             exploreChipView.heightAnchor.constraint(equalToConstant: 34),
 
             avatarImageView.leadingAnchor.constraint(equalTo: exploreChipView.leadingAnchor),
@@ -134,9 +179,14 @@ final class LiveRoomCollectionViewCell: UICollectionViewCell {
             exploreLabel.trailingAnchor.constraint(equalTo: exploreChipView.trailingAnchor, constant: -8),
             exploreLabel.centerYAnchor.constraint(equalTo: exploreChipView.centerYAnchor),
 
-            titleLabel.topAnchor.constraint(equalTo: titleBackgroundView.topAnchor, constant: 10),
+            titleLabel.topAnchor.constraint(equalTo: titleBackgroundView.topAnchor, constant: 9),
             titleLabel.leadingAnchor.constraint(equalTo: titleBackgroundView.leadingAnchor, constant: 8),
-            titleLabel.trailingAnchor.constraint(equalTo: titleBackgroundView.trailingAnchor, constant: -8)
+            titleLabel.trailingAnchor.constraint(equalTo: titleBackgroundView.trailingAnchor, constant: -8),
+
+            metaLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
+            metaLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            metaLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+            metaLabel.bottomAnchor.constraint(lessThanOrEqualTo: titleBackgroundView.bottomAnchor, constant: -8)
         ])
     }
 }

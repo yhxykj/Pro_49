@@ -11,6 +11,22 @@ struct NotesEntry {
     let date: String
     let text: String
     let imageNames: [String]
+    let imageFileURLs: [URL]
+
+    init(date: String, text: String, imageNames: [String] = [], imageFileURLs: [URL] = []) {
+        self.date = date
+        self.text = text
+        self.imageNames = imageNames
+        self.imageFileURLs = imageFileURLs
+    }
+
+    var images: [UIImage] {
+        let localImages = imageFileURLs.compactMap { UIImage(contentsOfFile: $0.path) }
+        let assetImages = imageNames.compactMap {
+            UIImage(named: $0)?.withRenderingMode(.alwaysOriginal)
+        }
+        return localImages + assetImages
+    }
 }
 
 final class NotesEntryTableViewCell: UITableViewCell {
@@ -36,16 +52,26 @@ final class NotesEntryTableViewCell: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        imageViews.forEach { $0.image = nil }
+        imageViews.forEach {
+            $0.image = nil
+            $0.isHidden = true
+        }
     }
 
     func configure(with entry: NotesEntry) {
         dateLabel.text = entry.date
         bodyLabel.text = entry.text
 
+        let images = entry.images
         imageViews.enumerated().forEach { index, imageView in
-            guard index < entry.imageNames.count else { return }
-            imageView.image = UIImage(named: entry.imageNames[index])?.withRenderingMode(.alwaysOriginal)
+            guard index < images.count else {
+                imageView.image = nil
+                imageView.isHidden = true
+                return
+            }
+
+            imageView.image = images[index]
+            imageView.isHidden = false
         }
     }
 

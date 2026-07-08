@@ -13,33 +13,20 @@ final class ShareViewController: UIViewController {
     private let addButton = UIButton(type: .custom)
     private let tableView = UITableView(frame: .zero, style: .plain)
 
-    private let posts: [SharePost] = [
-        SharePost(
-            author: "Esme",
-            avatarImageName: "BadgeCurrentExplorer",
-            text: "Wander through the city and find your own fun.",
-            postImageName: "AuthCityBackground",
-            likeCount: "123"
-        ),
-        SharePost(
-            author: "Esme",
-            avatarImageName: "BadgeCurrentExplorer",
-            text: "Keep moving and explore the four seasons of a city.",
-            postImageName: "ExploreHeroImage",
-            likeCount: "123"
-        )
-    ]
+    private var posts: [SharePost] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackground()
         setupView()
         setupLayout()
+        reloadPosts()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
+        reloadPosts()
     }
 
     override func viewDidLayoutSubviews() {
@@ -114,6 +101,13 @@ final class ShareViewController: UIViewController {
         viewController.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(viewController, animated: true)
     }
+
+    private func reloadPosts() {
+        SharePostActionStore.resetModerationDataOnceIfNeeded()
+        SharePostActionStore.resetFourPostFeedDataOnceIfNeeded()
+        posts = SharePostActionStore.visiblePosts(from: SharePostActionStore.defaultPosts)
+        tableView.reloadData()
+    }
 }
 
 extension ShareViewController: UITableViewDataSource {
@@ -132,7 +126,13 @@ extension ShareViewController: UITableViewDataSource {
             self?.showDetail(for: post)
         }
         cell.avatarTapHandler = { [weak self] in
-            self?.showUserCenter()
+            self?.showUserCenter(for: post)
+        }
+        cell.likeTapHandler = { [weak self] in
+            self?.toggleLike(for: post.id)
+        }
+        cell.moreTapHandler = { [weak self] in
+            self?.showPostActions(for: post)
         }
         return cell
     }
@@ -149,9 +149,76 @@ extension ShareViewController: UITableViewDelegate {
         navigationController?.pushViewController(viewController, animated: true)
     }
 
-    fileprivate func showUserCenter() {
-        let viewController = UserCenterViewController()
+    fileprivate func showUserCenter(for post: SharePost) {
+        let viewController = UserCenterViewController(post: post)
         viewController.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(viewController, animated: true)
+    }
+
+    private func toggleLike(for postID: String) {
+        guard let index = posts.firstIndex(where: { $0.id == postID }) else { return }
+        posts[index].isLiked.toggle()
+        posts[index].likeCount = max(0, posts[index].likeCount + (posts[index].isLiked ? 1 : -1))
+        SharePostActionStore.setLiked(posts[index].isLiked, for: postID)
+        tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+    }
+
+    private func showPostActions(for post: SharePost) {
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        actionSheet.addAction(
+            UIAlertAction(title: "Report", style: .destructive) { [weak self] _ in
+                self?.reportPost(post.id)
+            }
+        )
+        actionSheet.addAction(
+            UIAlertAction(title: "Block", style: .destructive) { [weak self] _ in
+                self?.blockAuthor(post.author)
+            }
+        )
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        actionSheet.popoverPresentationController?.sourceView = view
+        actionSheet.popoverPresentationController?.sourceRect = CGRect(
+            x: view.bounds.midX,
+            y: view.bounds.maxY,
+            width: 1,
+            height: 1
+        )
+        present(actionSheet, animated: true)
+    }
+
+    private func reportPost(_ postID: String) {
+        SharePostActionStore.report(postID: postID)
+        showActionSuccess(
+            title: "Report submitted",
+            message: "We will review this post within 24 hours."
+        )
+    }
+
+    private func blockAuthor(_ author: String) {
+        SharePostActionStore.block(author: author)
+        let removedIndexPaths = posts.enumerated()
+            .filter { $0.element.author == author }
+            .map { IndexPath(row: $0.offset, section: 0) }
+
+        posts.removeAll { $0.author == author }
+        guard !removedIndexPaths.isEmpty else {
+            reloadPosts()
+            showActionSuccess(
+                title: "Blocked",
+                message: "Posts from \(author) have been hidden from your feed."
+            )
+            return
+        }
+        tableView.deleteRows(at: removedIndexPaths, with: .automatic)
+        showActionSuccess(
+            title: "Blocked",
+            message: "Posts from \(author) have been hidden from your feed."
+        )
+    }
+
+    private func showActionSuccess(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alertController, animated: true)
     }
 }

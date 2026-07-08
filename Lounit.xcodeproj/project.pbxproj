@@ -6,8 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		CEA3B1598EB324D946E8626D /* Pods_Lounit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 444678AE1C242B7D68991354 /* Pods_Lounit.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		444678AE1C242B7D68991354 /* Pods_Lounit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Lounit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		722BAB322FD177E800C32DF1 /* Lounit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lounit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		93F2508B53660F0D724EAE49 /* Pods-Lounit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lounit.release.xcconfig"; path = "Target Support Files/Pods-Lounit/Pods-Lounit.release.xcconfig"; sourceTree = "<group>"; };
+		C320405FF6EF01A8EA599D51 /* Pods-Lounit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lounit.debug.xcconfig"; path = "Target Support Files/Pods-Lounit/Pods-Lounit.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -36,17 +43,30 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CEA3B1598EB324D946E8626D /* Pods_Lounit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		59335AF29365C35A64D192AF /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C320405FF6EF01A8EA599D51 /* Pods-Lounit.debug.xcconfig */,
+				93F2508B53660F0D724EAE49 /* Pods-Lounit.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		722BAB292FD177E800C32DF1 = {
 			isa = PBXGroup;
 			children = (
 				722BAB342FD177E800C32DF1 /* Lounit */,
 				722BAB332FD177E800C32DF1 /* Products */,
+				59335AF29365C35A64D192AF /* Pods */,
+				83F6678CD9C22F8D7E074D01 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,6 +78,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		83F6678CD9C22F8D7E074D01 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				444678AE1C242B7D68991354 /* Pods_Lounit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -65,6 +93,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 722BAB452FD177EB00C32DF1 /* Build configuration list for PBXNativeTarget "Lounit" */;
 			buildPhases = (
+				2694C1DDCBF122E67D191BFF /* [CP] Check Pods Manifest.lock */,
 				722BAB2E2FD177E800C32DF1 /* Sources */,
 				722BAB2F2FD177E800C32DF1 /* Frameworks */,
 				722BAB302FD177E800C32DF1 /* Resources */,
@@ -77,8 +106,6 @@
 				722BAB342FD177E800C32DF1 /* Lounit */,
 			);
 			name = Lounit;
-			packageProductDependencies = (
-			);
 			productName = Lounit;
 			productReference = 722BAB322FD177E800C32DF1 /* Lounit.app */;
 			productType = "com.apple.product-type.application";
@@ -127,6 +154,31 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		2694C1DDCBF122E67D191BFF /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Lounit-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		722BAB2E2FD177E800C32DF1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -140,6 +192,7 @@
 /* Begin XCBuildConfiguration section */
 		722BAB462FD177EB00C32DF1 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C320405FF6EF01A8EA599D51 /* Pods-Lounit.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -177,6 +230,7 @@
 		};
 		722BAB472FD177EB00C32DF1 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 93F2508B53660F0D724EAE49 /* Pods-Lounit.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

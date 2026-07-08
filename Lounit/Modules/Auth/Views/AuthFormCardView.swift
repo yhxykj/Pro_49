@@ -41,9 +41,11 @@ enum AuthFormMode {
 
 final class AuthFormCardView: UIView {
     var backHandler: (() -> Void)?
-    var createAccountHandler: (() -> Void)?
-    var registrationCompleteHandler: (() -> Void)?
+    var loginHandler: ((_ mail: String, _ password: String) -> Void)?
+    var registrationCompleteHandler: ((_ mail: String, _ password: String) -> Void)?
     var agreementMissingHandler: (() -> Void)?
+    var agreementLinksHandler: (() -> Void)?
+    var validationFailedHandler: ((_ message: String) -> Void)?
 
     private let mode: AuthFormMode
     private let cardView = UIView()
@@ -51,6 +53,8 @@ final class AuthFormCardView: UIView {
     private let backButton = UIButton(type: .custom)
     private let welcomeTextImageView = UIImageView()
     private let fieldsStack = UIStackView()
+    private let mailField = AuthInputField(title: "Mail", iconName: "xmark", isSecure: false)
+    private let passwordField = AuthInputField(title: "Password", iconName: "AuthEyeClosedIcon", isSecure: true)
     private let primaryButton = UIButton(type: .custom)
     private let agreementButton = UIButton(type: .custom)
     private let agreementLabel = UILabel()
@@ -102,9 +106,6 @@ final class AuthFormCardView: UIView {
     }
 
     private func setupFields() {
-        let mailField = AuthInputField(title: "Mail", iconName: "xmark", isSecure: false)
-        let passwordField = AuthInputField(title: "Password", iconName: "AuthEyeClosedIcon", isSecure: true)
-
         fieldsStack.axis = .vertical
         fieldsStack.spacing = 28
         fieldsStack.translatesAutoresizingMaskIntoConstraints = false
@@ -133,7 +134,11 @@ final class AuthFormCardView: UIView {
         agreementLabel.font = .systemFont(ofSize: 13, weight: .semibold)
         agreementLabel.adjustsFontSizeToFitWidth = true
         agreementLabel.minimumScaleFactor = 0.75
+        agreementLabel.isUserInteractionEnabled = true
         agreementLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(didTapAgreementLinks))
+        agreementLabel.addGestureRecognizer(tapGesture)
     }
 
     private func setupLayout() {
@@ -148,10 +153,10 @@ final class AuthFormCardView: UIView {
         cardView.addSubview(primaryButton)
 
         NSLayoutConstraint.activate([
-            backButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10),
-            backButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
-            backButton.widthAnchor.constraint(equalToConstant: 32),
-            backButton.heightAnchor.constraint(equalToConstant: 32),
+            backButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
+            backButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
+            backButton.widthAnchor.constraint(equalToConstant: 44),
+            backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
 
             tourView.bottomAnchor.constraint(equalTo: cardView.topAnchor, constant: 52),
             tourView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -28),
@@ -198,10 +203,17 @@ final class AuthFormCardView: UIView {
             return
         }
 
+        let mail = mailField.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let password = passwordField.text
+        guard !mail.isEmpty, !password.isEmpty else {
+            validationFailedHandler?("Please enter your mail and password.")
+            return
+        }
+
         if mode == .login {
-            createAccountHandler?()
+            loginHandler?(mail, password)
         } else {
-            registrationCompleteHandler?()
+            registrationCompleteHandler?(mail, password)
         }
     }
 
@@ -211,6 +223,10 @@ final class AuthFormCardView: UIView {
         agreementButton.setImage(imageName.flatMap { UIImage(systemName: $0) }, for: .normal)
         agreementButton.tintColor = .white
         agreementButton.backgroundColor = isAgreementAccepted ? UIColor(red: 0.3, green: 0.64, blue: 0.96, alpha: 1) : .clear
+    }
+
+    @objc private func didTapAgreementLinks() {
+        agreementLinksHandler?()
     }
 
 }

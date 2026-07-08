@@ -90,8 +90,10 @@ private enum MainTabItem: CaseIterable {
             return LiveStreamingViewController()
         case .share:
             return ShareViewController()
-        case .more, .profile:
-            return MainTabContentViewController()
+        case .more:
+            return ChatMatesViewController()
+        case .profile:
+            return MyProfileViewController()
         }
     }
 
@@ -123,12 +125,5 @@ private enum MainTabItem: CaseIterable {
         case .profile:
             return "MainTabProfileSelected"
         }
-    }
-}
-
-private final class MainTabContentViewController: UIViewController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = UIColor(red: 0.8, green: 0.92, blue: 1.0, alpha: 1)
     }
 }

@@ -8,17 +8,17 @@
 import UIKit
 
 final class UserCenterHeaderView: UIView {
-    var backTapHandler: (() -> Void)?
+    var followStateChangeHandler: ((Bool) -> Void)?
+    var messageTapHandler: (() -> Void)?
 
     private let backgroundImageView = UIImageView()
-    private let backButton = UIButton(type: .custom)
     private let avatarImageView = UIImageView()
     private let badgeImageView = UIImageView()
     private let nameLabel = UILabel()
     private let statsContainerView = UIView()
-    private let followStatsView = UserCenterStatView(value: "30", title: "Follow")
-    private let fansStatsView = UserCenterStatView(value: "30", title: "Fans")
-    private let likesStatsView = UserCenterStatView(value: "30", title: "Likes")
+    private let followStatsView = UserCenterStatView(value: "8", title: "Follow")
+    private let fansStatsView = UserCenterStatView(value: "16", title: "Fans")
+    private let likesStatsView = UserCenterStatView(value: "24", title: "Likes")
     private let firstDividerView = UIView()
     private let secondDividerView = UIView()
     private let messageButton = UIButton(type: .custom)
@@ -40,30 +40,43 @@ final class UserCenterHeaderView: UIView {
         updateFollowState()
     }
 
+    func configure(
+        name: String,
+        avatarImageName: String,
+        backgroundImageName: String,
+        followCount: Int,
+        fansCount: Int,
+        likesCount: Int,
+        isFollowing: Bool
+    ) {
+        nameLabel.text = name
+        avatarImageView.image = UIImage(named: avatarImageName)?.withRenderingMode(.alwaysOriginal)
+        backgroundImageView.image = UIImage(named: backgroundImageName)?.withRenderingMode(.alwaysOriginal)
+        followStatsView.configure(value: "\(followCount)")
+        fansStatsView.configure(value: "\(fansCount)")
+        likesStatsView.configure(value: "\(likesCount)")
+        self.isFollowing = isFollowing
+        updateFollowState()
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        avatarImageView.layer.cornerRadius = avatarImageView.bounds.height / 2
+        avatarImageView.layer.cornerRadius = 56
         statsContainerView.layer.cornerRadius = statsContainerView.bounds.height / 2
     }
 
     private func setupView() {
         backgroundColor = .clear
-        translatesAutoresizingMaskIntoConstraints = false
 
         backgroundImageView.image = UIImage(named: "BadgeCurrentExplorer")?.withRenderingMode(.alwaysOriginal)
         backgroundImageView.contentMode = .scaleAspectFill
         backgroundImageView.clipsToBounds = true
         backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
 
-        backButton.setImage(UIImage(named: "AuthBackIcon")?.withRenderingMode(.alwaysTemplate), for: .normal)
-        backButton.tintColor = .white
-        backButton.imageView?.contentMode = .scaleAspectFit
-        backButton.translatesAutoresizingMaskIntoConstraints = false
-        backButton.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
-
         avatarImageView.image = UIImage(named: "BadgeCurrentExplorer")?.withRenderingMode(.alwaysOriginal)
         avatarImageView.contentMode = .scaleAspectFill
         avatarImageView.clipsToBounds = true
+        avatarImageView.layer.cornerRadius = 56
         avatarImageView.layer.borderWidth = 3
         avatarImageView.layer.borderColor = UIColor.white.cgColor
         avatarImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -89,6 +102,7 @@ final class UserCenterHeaderView: UIView {
         messageButton.setImage(UIImage(named: "UserCenterMessageButton")?.withRenderingMode(.alwaysOriginal), for: .normal)
         messageButton.imageView?.contentMode = .scaleAspectFit
         messageButton.translatesAutoresizingMaskIntoConstraints = false
+        messageButton.addTarget(self, action: #selector(didTapMessage), for: .touchUpInside)
 
         followButton.imageView?.contentMode = .scaleAspectFit
         followButton.translatesAutoresizingMaskIntoConstraints = false
@@ -103,7 +117,6 @@ final class UserCenterHeaderView: UIView {
 
     private func setupLayout() {
         addSubview(backgroundImageView)
-        addSubview(backButton)
         addSubview(avatarImageView)
         addSubview(badgeImageView)
         addSubview(nameLabel)
@@ -124,11 +137,6 @@ final class UserCenterHeaderView: UIView {
             backgroundImageView.leadingAnchor.constraint(equalTo: leadingAnchor),
             backgroundImageView.trailingAnchor.constraint(equalTo: trailingAnchor),
             backgroundImageView.heightAnchor.constraint(equalToConstant: 372),
-
-            backButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 3),
-            backButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-            backButton.widthAnchor.constraint(equalToConstant: 44),
-            backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
 
             avatarImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 28),
             avatarImageView.bottomAnchor.constraint(equalTo: backgroundImageView.bottomAnchor, constant: -118),
@@ -177,12 +185,12 @@ final class UserCenterHeaderView: UIView {
 
             messageButton.topAnchor.constraint(equalTo: statsContainerView.bottomAnchor, constant: 28),
             messageButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 17),
-            messageButton.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.45),
+            messageButton.widthAnchor.constraint(equalTo: followButton.widthAnchor),
             messageButton.heightAnchor.constraint(equalToConstant: 64),
 
             followButton.topAnchor.constraint(equalTo: statsContainerView.bottomAnchor, constant: 28),
+            followButton.leadingAnchor.constraint(equalTo: messageButton.trailingAnchor, constant: 14),
             followButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -17),
-            followButton.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.45),
             followButton.heightAnchor.constraint(equalToConstant: 64),
 
             followLabel.centerXAnchor.constraint(equalTo: followButton.centerXAnchor),
@@ -198,13 +206,14 @@ final class UserCenterHeaderView: UIView {
         followLabel.text = isFollowing ? "Following" : "Follow"
     }
 
-    @objc private func didTapBack() {
-        backTapHandler?()
-    }
-
     @objc private func didTapFollow() {
         isFollowing.toggle()
         updateFollowState()
+        followStateChangeHandler?(isFollowing)
+    }
+
+    @objc private func didTapMessage() {
+        messageTapHandler?()
     }
 }
 
@@ -224,6 +233,10 @@ private final class UserCenterStatView: UIView {
         super.init(coder: coder)
         setupView()
         setupLayout()
+    }
+
+    func configure(value: String) {
+        valueLabel.text = value
     }
 
     private func setupView() {

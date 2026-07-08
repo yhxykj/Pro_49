@@ -21,6 +21,10 @@ final class HomeHeaderReusableView: UICollectionReusableView {
     private let categoryStackView = UIStackView()
     private let recommendedTitleLabel = UILabel()
 
+    func configure(profile: UserProfile) {
+        avatarView.image = UserProfileStore.avatarImage(for: profile.avatarImageName)
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -45,7 +49,7 @@ final class HomeHeaderReusableView: UICollectionReusableView {
         titleImageView.contentMode = .scaleAspectFit
         titleImageView.translatesAutoresizingMaskIntoConstraints = false
 
-        avatarView.image = UIImage(named: "LoginMascot")?.withRenderingMode(.alwaysOriginal)
+        avatarView.image = UserProfileStore.avatarImage(for: UserProfileStore.currentProfile.avatarImageName)
         avatarView.contentMode = .scaleAspectFill
         avatarView.backgroundColor = UIColor(red: 0.83, green: 0.93, blue: 1.0, alpha: 1)
         avatarView.clipsToBounds = true
@@ -54,7 +58,9 @@ final class HomeHeaderReusableView: UICollectionReusableView {
         promptCardImageView.image = UIImage(named: "HomeExplorePromptCard")?.withRenderingMode(.alwaysOriginal)
         promptCardImageView.contentMode = .scaleAspectFill
         promptCardImageView.clipsToBounds = true
+        promptCardImageView.isUserInteractionEnabled = true
         promptCardImageView.translatesAutoresizingMaskIntoConstraints = false
+        promptCardImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(didTapExplore)))
 
         searchBarImageView.image = UIImage(named: "HomeSearchBar")?.withRenderingMode(.alwaysOriginal)
         searchBarImageView.contentMode = .scaleToFill

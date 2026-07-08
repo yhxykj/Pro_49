@@ -7,15 +7,18 @@
 
 import UIKit
 
-struct ShareComment {
+struct ShareComment: Codable {
+    let id: String
     let author: String
     let avatarImageName: String
     let text: String
+    var isMine: Bool = false
 }
 
 final class ShareCommentTableViewCell: UITableViewCell {
     static let reuseIdentifier = "ShareCommentTableViewCell"
     var avatarTapHandler: (() -> Void)?
+    var moreTapHandler: (() -> Void)?
 
     private let cardView = UIView()
     private let avatarImageView = UIImageView()
@@ -37,13 +40,30 @@ final class ShareCommentTableViewCell: UITableViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        avatarImageView.layer.cornerRadius = avatarImageView.bounds.height / 2
+        avatarImageView.layer.cornerRadius = 21
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        avatarTapHandler = nil
+        moreTapHandler = nil
     }
 
     func configure(with comment: ShareComment) {
-        avatarImageView.image = UIImage(named: comment.avatarImageName)?.withRenderingMode(.alwaysOriginal)
+        avatarImageView.image = UserProfileStore.avatarImage(for: comment.avatarImageName)
         nameLabel.text = comment.author
         bodyLabel.text = comment.text
+        if comment.isMine {
+            moreButton.setImage(nil, for: .normal)
+            moreButton.setTitle("delete", for: .normal)
+            moreButton.setTitleColor(UIColor(red: 0.86, green: 0.20, blue: 0.20, alpha: 1), for: .normal)
+            moreButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
+            moreButton.contentHorizontalAlignment = .right
+        } else {
+            moreButton.setTitle(nil, for: .normal)
+            moreButton.setImage(UIImage(named: "ShareMoreButton")?.withRenderingMode(.alwaysOriginal), for: .normal)
+            moreButton.contentHorizontalAlignment = .center
+        }
     }
 
     private func setupView() {
@@ -60,6 +80,7 @@ final class ShareCommentTableViewCell: UITableViewCell {
 
         avatarImageView.contentMode = .scaleAspectFill
         avatarImageView.clipsToBounds = true
+        avatarImageView.layer.cornerRadius = 21
         avatarImageView.isUserInteractionEnabled = true
         avatarImageView.translatesAutoresizingMaskIntoConstraints = false
         avatarImageView.addGestureRecognizer(
@@ -73,6 +94,7 @@ final class ShareCommentTableViewCell: UITableViewCell {
         moreButton.setImage(UIImage(named: "ShareMoreButton")?.withRenderingMode(.alwaysOriginal), for: .normal)
         moreButton.imageView?.contentMode = .scaleAspectFit
         moreButton.translatesAutoresizingMaskIntoConstraints = false
+        moreButton.addTarget(self, action: #selector(didTapMore), for: .touchUpInside)
 
         bodyLabel.textColor = .black
         bodyLabel.font = .systemFont(ofSize: 16, weight: .medium)
@@ -104,7 +126,7 @@ final class ShareCommentTableViewCell: UITableViewCell {
 
             moreButton.centerYAnchor.constraint(equalTo: avatarImageView.centerYAnchor),
             moreButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
-            moreButton.widthAnchor.constraint(equalToConstant: 32),
+            moreButton.widthAnchor.constraint(equalToConstant: 58),
             moreButton.heightAnchor.constraint(equalTo: moreButton.widthAnchor),
 
             bodyLabel.topAnchor.constraint(equalTo: avatarImageView.bottomAnchor, constant: 16),
@@ -116,5 +138,9 @@ final class ShareCommentTableViewCell: UITableViewCell {
 
     @objc private func didTapAvatar() {
         avatarTapHandler?()
+    }
+
+    @objc private func didTapMore() {
+        moreTapHandler?()
     }
 }

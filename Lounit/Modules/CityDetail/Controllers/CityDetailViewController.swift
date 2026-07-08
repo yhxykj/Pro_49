@@ -8,42 +8,25 @@
 import UIKit
 
 final class CityDetailViewController: UIViewController {
-    private enum Category: Int, CaseIterable {
-        case culture
-        case nature
-        case food
-
-        var normalImageName: String {
-            switch self {
-            case .culture:
-                return "CityDetailCulture"
-            case .nature:
-                return "CityDetailNature"
-            case .food:
-                return "CityDetailFood"
-            }
-        }
-
-        var selectedImageName: String {
-            switch self {
-            case .culture:
-                return "CityDetailCultureSelected"
-            case .nature:
-                return "CityDetailNatureSelected"
-            case .food:
-                return "CityDetailFoodSelected"
-            }
-        }
-    }
-
+    private let city: ExploreCity
     private let heroImageView = UIImageView()
     private let backButton = UIButton(type: .custom)
     private let contentCardView = UIView()
     private let categoryStackView = UIStackView()
     private var categoryButtons: [UIButton] = []
-    private var selectedCategory: Category = .culture
+    private var selectedCategory: ExploreCityInfoKind = .culture
     private let titleLabel = UILabel()
     private let descriptionTextView = UITextView()
+
+    init(city: ExploreCity) {
+        self.city = city
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        city = ExploreCityDataSource.cities[0]
+        super.init(coder: coder)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,7 +42,8 @@ final class CityDetailViewController: UIViewController {
     private func setupView() {
         view.backgroundColor = .white
 
-        heroImageView.image = UIImage(named: "ExploreHeroImage")?.withRenderingMode(.alwaysOriginal)
+        heroImageView.image = UIImage(named: city.heroImageName)?.withRenderingMode(.alwaysOriginal)
+            ?? UIImage(named: "ExploreHeroImage")?.withRenderingMode(.alwaysOriginal)
         heroImageView.contentMode = .scaleAspectFill
         heroImageView.clipsToBounds = true
         heroImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -79,7 +63,7 @@ final class CityDetailViewController: UIViewController {
         categoryStackView.alignment = .center
         categoryStackView.translatesAutoresizingMaskIntoConstraints = false
 
-        Category.allCases.forEach { category in
+        ExploreCityInfoKind.allCases.forEach { category in
             let button = UIButton(type: .custom)
             button.tag = category.rawValue
             button.imageView?.contentMode = .scaleAspectFit
@@ -94,16 +78,12 @@ final class CityDetailViewController: UIViewController {
         }
         updateCategoryButtons()
 
-        titleLabel.text = "Florence, Italy - Old Renaissance Town"
         titleLabel.textColor = .black
         titleLabel.font = .systemFont(ofSize: 18, weight: .bold)
         titleLabel.adjustsFontSizeToFitWidth = true
         titleLabel.minimumScaleFactor = 0.75
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        descriptionTextView.text = """
-        The birthplace of the Renaissance, home to masterpieces by Botticelli and Leonardo da Vinci in the Uffizi Gallery; medieval art and architecture abound throughout the city, including the dome of the Florence Cathedral, the Ponte Vecchio, and Piazzale Michelangelo.
-        """
         descriptionTextView.textColor = UIColor(white: 0.26, alpha: 1)
         descriptionTextView.font = .systemFont(ofSize: 18, weight: .regular)
         descriptionTextView.backgroundColor = .clear
@@ -113,6 +93,8 @@ final class CityDetailViewController: UIViewController {
         descriptionTextView.textContainerInset = .zero
         descriptionTextView.textContainer.lineFragmentPadding = 0
         descriptionTextView.translatesAutoresizingMaskIntoConstraints = false
+
+        updateContent()
     }
 
     private func setupLayout() {
@@ -130,10 +112,10 @@ final class CityDetailViewController: UIViewController {
             heroImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             heroImageView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.58),
 
-            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-            backButton.widthAnchor.constraint(equalToConstant: 32),
-            backButton.heightAnchor.constraint(equalToConstant: 32),
+            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 6),
+            backButton.widthAnchor.constraint(equalToConstant: 44),
+            backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
 
             contentCardView.topAnchor.constraint(equalTo: view.topAnchor, constant: 440),
             contentCardView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -162,16 +144,24 @@ final class CityDetailViewController: UIViewController {
     }
 
     @objc private func didTapCategory(_ sender: UIButton) {
-        guard let category = Category(rawValue: sender.tag) else { return }
+        guard let category = ExploreCityInfoKind(rawValue: sender.tag) else { return }
         selectedCategory = category
         updateCategoryButtons()
+        updateContent()
     }
 
     private func updateCategoryButtons() {
         categoryButtons.forEach { button in
-            guard let category = Category(rawValue: button.tag) else { return }
+            guard let category = ExploreCityInfoKind(rawValue: button.tag) else { return }
             let imageName = category == selectedCategory ? category.selectedImageName : category.normalImageName
             button.setImage(UIImage(named: imageName)?.withRenderingMode(.alwaysOriginal), for: .normal)
         }
+    }
+
+    private func updateContent() {
+        let info = city.info(for: selectedCategory)
+        titleLabel.text = info.title
+        descriptionTextView.text = info.detail
+        descriptionTextView.setContentOffset(.zero, animated: false)
     }
 }

@@ -8,7 +8,9 @@
 import UIKit
 
 final class ShareDetailViewController: UIViewController {
-    private let post: SharePost
+    private static let localCommentsKeyPrefix = "lounit.share.localComments."
+
+    private var post: SharePost
     private let backgroundGradient = CAGradientLayer()
     private let backButton = UIButton(type: .custom)
     private let tableView = UITableView(frame: .zero, style: .plain)
@@ -16,38 +18,38 @@ final class ShareDetailViewController: UIViewController {
     private let commentTextField = UITextField()
     private let sendButton = UIButton(type: .custom)
     private var inputBarBottomConstraint: NSLayoutConstraint?
+    private var reportedCommentIDs: Set<String> {
+        get {
+            Set(UserDefaults.standard.stringArray(forKey: reportedCommentIDsKey) ?? [])
+        }
+        set {
+            UserDefaults.standard.set(Array(newValue), forKey: reportedCommentIDsKey)
+        }
+    }
+    private var reportedCommentIDsKey: String {
+        "lounit.share.reportedCommentIDs.\(post.id)"
+    }
 
-    private var comments: [ShareComment] = [
-        ShareComment(
-            author: "Esme",
-            avatarImageName: "BadgeCurrentExplorer",
-            text: "I went on an outdoor trip with my best friend and we pitched a tent for the night."
-        ),
-        ShareComment(
-            author: "Esme",
-            avatarImageName: "BadgeCurrentExplorer",
-            text: "I went on an outdoor trip with my best friend and we pitched a tent for the night."
-        ),
-        ShareComment(
-            author: "Esme",
-            avatarImageName: "BadgeCurrentExplorer",
-            text: "I went on an outdoor trip with my best friend and we pitched a tent for the night."
-        )
-    ]
+    private var comments: [ShareComment]
 
     init(post: SharePost) {
+        let post = SharePostActionStore.applyingSavedLikeState(to: post)
         self.post = post
+        self.comments = Self.defaultComments(for: post.id) + Self.localComments(for: post.id)
         super.init(nibName: nil, bundle: nil)
     }
 
     required init?(coder: NSCoder) {
-        post = SharePost(
+        let post = SharePost(
+            id: "dynamic-post-old-new-city",
             author: "Esme",
-            avatarImageName: "BadgeCurrentExplorer",
+            avatarImageName: "UserAvatar01",
             text: "A fresh perspective on the familiar city: the clash between old alleys and new buildings.",
-            postImageName: "AuthCityBackground",
-            likeCount: "123"
+            postImageName: "DynamicPostImage02",
+            likeCount: 123
         )
+        self.post = post
+        self.comments = Self.defaultComments(for: post.id) + Self.localComments(for: post.id)
         super.init(coder: coder)
     }
 
@@ -55,11 +57,62 @@ final class ShareDetailViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
     }
 
+    private static func defaultComments(for postID: String) -> [ShareComment] {
+        switch postID {
+        case "dynamic-post-old-new-city":
+            return [
+                ShareComment(
+                    id: "old-new-city-comment-01",
+                    author: "Mira",
+                    avatarImageName: "UserAvatar05",
+                    text: "The mural makes the old block feel alive next to those new buildings."
+                ),
+                ShareComment(
+                    id: "old-new-city-comment-02",
+                    author: "Leo",
+                    avatarImageName: "UserAvatar07",
+                    text: "Love that contrast between quiet alleys and the bright city wall."
+                )
+            ]
+        case "dynamic-post-city-fun":
+            return [
+                ShareComment(
+                    id: "city-fun-comment-01",
+                    author: "Nina",
+                    avatarImageName: "UserAvatar08",
+                    text: "Rainy streets make wandering feel calmer and more cinematic."
+                )
+            ]
+        default:
+            return []
+        }
+    }
+
+    private static func localComments(for postID: String) -> [ShareComment] {
+        let key = localCommentsKeyPrefix + postID
+        guard let data = UserDefaults.standard.data(forKey: key) else { return [] }
+        return (try? JSONDecoder().decode([ShareComment].self, from: data)) ?? []
+    }
+
+    private static func saveLocalComments(_ comments: [ShareComment], for postID: String) {
+        let key = localCommentsKeyPrefix + postID
+        let localComments = comments.filter(\.isMine)
+        guard !localComments.isEmpty else {
+            UserDefaults.standard.removeObject(forKey: key)
+            return
+        }
+
+        if let data = try? JSONEncoder().encode(localComments) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackground()
         setupView()
         setupLayout()
+        removeReportedComments()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -70,6 +123,7 @@ final class ShareDetailViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         backgroundGradient.frame = view.bounds
+        view.bringSubviewToFront(backButton)
     }
 
     private func setupBackground() {
@@ -151,9 +205,9 @@ final class ShareDetailViewController: UIViewController {
     }
 
     private func setupLayout() {
-        view.addSubview(backButton)
         view.addSubview(tableView)
         view.addSubview(commentInputBar)
+        view.addSubview(backButton)
 
         commentInputBar.addSubview(commentTextField)
         commentInputBar.addSubview(sendButton)
@@ -165,8 +219,8 @@ final class ShareDetailViewController: UIViewController {
         self.inputBarBottomConstraint = inputBarBottomConstraint
 
         NSLayoutConstraint.activate([
-            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 3),
-            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 5),
+            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 6),
             backButton.widthAnchor.constraint(equalToConstant: 44),
             backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
 
@@ -190,10 +244,16 @@ final class ShareDetailViewController: UIViewController {
             commentTextField.topAnchor.constraint(equalTo: commentInputBar.topAnchor),
             commentTextField.bottomAnchor.constraint(equalTo: commentInputBar.bottomAnchor)
         ])
+
+        view.bringSubviewToFront(backButton)
     }
 
     @objc private func didTapBack() {
-        navigationController?.popViewController(animated: true)
+        if let navigationController, navigationController.viewControllers.count > 1 {
+            navigationController.popViewController(animated: true)
+        } else {
+            dismiss(animated: true)
+        }
     }
 
     @objc private func didTapSend() {
@@ -235,18 +295,30 @@ final class ShareDetailViewController: UIViewController {
             return
         }
 
+        let profile = UserProfileStore.currentProfile
         comments.append(
             ShareComment(
-                author: "Esme",
-                avatarImageName: "BadgeCurrentExplorer",
-                text: text
+                id: UUID().uuidString,
+                author: profile.name,
+                avatarImageName: profile.avatarImageName,
+                text: text,
+                isMine: true
             )
         )
         commentTextField.text = nil
+        persistLocalComments()
 
         let indexPath = IndexPath(row: comments.count, section: 0)
         tableView.insertRows(at: [indexPath], with: .automatic)
         tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+    }
+
+    private func removeReportedComments() {
+        comments = comments.filter { !reportedCommentIDs.contains($0.id) }
+    }
+
+    private func persistLocalComments() {
+        Self.saveLocalComments(comments, for: post.id)
     }
 }
 
@@ -265,6 +337,12 @@ extension ShareDetailViewController: UITableViewDataSource {
             cell.avatarTapHandler = { [weak self] in
                 self?.showUserCenter()
             }
+            cell.likeTapHandler = { [weak self] in
+                self?.togglePostLike()
+            }
+            cell.moreTapHandler = { [weak self] in
+                self?.showPostActions()
+            }
             return cell
         }
 
@@ -276,6 +354,14 @@ extension ShareDetailViewController: UITableViewDataSource {
         cell.avatarTapHandler = { [weak self] in
             self?.showUserCenter()
         }
+        let comment = comments[indexPath.row - 1]
+        cell.moreTapHandler = { [weak self] in
+            if comment.isMine {
+                self?.deleteComment(comment.id)
+            } else {
+                self?.showCommentActions(for: comment.id)
+            }
+        }
         return cell
     }
 }
@@ -284,9 +370,105 @@ extension ShareDetailViewController: UITableViewDelegate {}
 
 private extension ShareDetailViewController {
     func showUserCenter() {
-        let viewController = UserCenterViewController()
+        let viewController = UserCenterViewController(post: post)
         viewController.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(viewController, animated: true)
+    }
+
+    func togglePostLike() {
+        post.isLiked.toggle()
+        post.likeCount = max(0, post.likeCount + (post.isLiked ? 1 : -1))
+        SharePostActionStore.setLiked(post.isLiked, for: post.id)
+        tableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .none)
+    }
+
+    func showPostActions() {
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        actionSheet.addAction(
+            UIAlertAction(title: "Report", style: .destructive) { [weak self] _ in
+                self?.reportPost()
+            }
+        )
+        actionSheet.addAction(
+            UIAlertAction(title: "Block", style: .destructive) { [weak self] _ in
+                self?.blockAuthor()
+            }
+        )
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        actionSheet.popoverPresentationController?.sourceView = view
+        actionSheet.popoverPresentationController?.sourceRect = CGRect(
+            x: view.bounds.midX,
+            y: view.bounds.maxY,
+            width: 1,
+            height: 1
+        )
+        present(actionSheet, animated: true)
+    }
+
+    func showCommentActions(for commentID: String) {
+        let actionSheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        actionSheet.addAction(
+            UIAlertAction(title: "Report", style: .destructive) { [weak self] _ in
+                self?.reportComment(commentID)
+            }
+        )
+        actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        actionSheet.popoverPresentationController?.sourceView = view
+        actionSheet.popoverPresentationController?.sourceRect = CGRect(
+            x: view.bounds.midX,
+            y: view.bounds.maxY,
+            width: 1,
+            height: 1
+        )
+        present(actionSheet, animated: true)
+    }
+
+    func reportPost() {
+        SharePostActionStore.report(postID: post.id)
+        showActionSuccess(
+            title: "Report submitted",
+            message: "We will review this post within 24 hours."
+        )
+    }
+
+    func blockAuthor() {
+        SharePostActionStore.block(author: post.author)
+        showActionSuccess(
+            title: "Blocked",
+            message: "Posts from \(post.author) have been hidden from your feed."
+        ) { [weak self] in
+            self?.didTapBack()
+        }
+    }
+
+    func reportComment(_ commentID: String) {
+        guard let index = comments.firstIndex(where: { $0.id == commentID }) else { return }
+        var ids = reportedCommentIDs
+        ids.insert(commentID)
+        reportedCommentIDs = ids
+
+        let removedComment = comments.remove(at: index)
+        if removedComment.isMine {
+            persistLocalComments()
+        }
+        tableView.deleteRows(at: [IndexPath(row: index + 1, section: 0)], with: .automatic)
+    }
+
+    func deleteComment(_ commentID: String) {
+        guard let index = comments.firstIndex(where: { $0.id == commentID }) else { return }
+        comments.remove(at: index)
+        persistLocalComments()
+        tableView.deleteRows(at: [IndexPath(row: index + 1, section: 0)], with: .automatic)
+    }
+
+    func showActionSuccess(title: String, message: String, completion: (() -> Void)? = nil) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alertController.addAction(
+            UIAlertAction(title: "OK", style: .default) { _ in
+                completion?()
+            }
+        )
+        present(alertController, animated: true)
     }
 }
 

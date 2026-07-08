@@ -10,10 +10,14 @@ import UIKit
 private struct LiveGiftOption {
     let imageName: String
     let price: String
+
+    var coinCost: Int {
+        Int(price) ?? 0
+    }
 }
 
 final class LiveGiftPanelView: UIView {
-    var sendGiftHandler: ((String, Int) -> Void)?
+    var sendGiftHandler: ((String, Int, Int) -> Void)?
 
     private let selectedColor = UIColor(red: 78.0 / 255.0, green: 164.0 / 255.0, blue: 252.0 / 255.0, alpha: 1)
     private let unselectedColor = UIColor(red: 54.0 / 255.0, green: 53.0 / 255.0, blue: 84.0 / 255.0, alpha: 1)
@@ -55,6 +59,10 @@ final class LiveGiftPanelView: UIView {
         updateSelection()
     }
 
+    func refreshBalance() {
+        balanceLabel.text = "\(GoldCoinStore.balance)"
+    }
+
     private func setupView() {
         backgroundColor = UIColor(red: 0.13, green: 0.13, blue: 0.28, alpha: 1)
         layer.cornerRadius = 22
@@ -73,7 +81,7 @@ final class LiveGiftPanelView: UIView {
         balanceCoinImageView.contentMode = .scaleAspectFit
         balanceCoinImageView.translatesAutoresizingMaskIntoConstraints = false
 
-        balanceLabel.text = "111"
+        balanceLabel.text = "\(GoldCoinStore.balance)"
         balanceLabel.textColor = .white
         balanceLabel.font = .systemFont(ofSize: 18, weight: .bold)
         balanceLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -216,7 +224,8 @@ final class LiveGiftPanelView: UIView {
 
     @objc private func didTapSendGift() {
         guard selectedIndex < gifts.count else { return }
-        sendGiftHandler?(gifts[selectedIndex].imageName, quantity)
+        let gift = gifts[selectedIndex]
+        sendGiftHandler?(gift.imageName, quantity, gift.coinCost * quantity)
     }
 
     private func updateQuantity() {

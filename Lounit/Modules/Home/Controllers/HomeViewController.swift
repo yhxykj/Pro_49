@@ -7,20 +7,9 @@
 
 import UIKit
 
-struct HomeCity {
-    let name: String
-}
-
 final class HomeViewController: UIViewController {
     private let backgroundGradient = CAGradientLayer()
-    private let recommendedCities: [HomeCity] = [
-        HomeCity(name: "New York, USA"),
-        HomeCity(name: "New York, USA"),
-        HomeCity(name: "New York, USA"),
-        HomeCity(name: "New York, USA"),
-        HomeCity(name: "New York, USA"),
-        HomeCity(name: "New York, USA")
-    ]
+    private let recommendedCities = ExploreCityDataSource.cities
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -49,6 +38,11 @@ final class HomeViewController: UIViewController {
         super.viewDidLoad()
         setupBackground()
         setupLayout()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        collectionView.reloadData()
     }
 
     override func viewDidLayoutSubviews() {
@@ -109,6 +103,7 @@ extension HomeViewController: UICollectionViewDataSource {
             withReuseIdentifier: HomeHeaderReusableView.reuseIdentifier,
             for: indexPath
         ) as! HomeHeaderReusableView
+        headerView.configure(profile: UserProfileStore.currentProfile)
         headerView.exploreTapHandler = { [weak self] in
             let viewController = ExploreViewController()
             viewController.hidesBottomBarWhenPushed = true
@@ -129,6 +124,12 @@ extension HomeViewController: UICollectionViewDataSource {
 }
 
 extension HomeViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let viewController = CityDetailViewController(city: recommendedCities[indexPath.item])
+        viewController.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(viewController, animated: true)
+    }
+
     func collectionView(
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,

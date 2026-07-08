@@ -28,6 +28,8 @@ final class ExploreCityTableViewCell: UITableViewCell {
     }
 
     func configure(with city: ExploreCity) {
+        cityImageView.image = UIImage(named: city.listImageName)?.withRenderingMode(.alwaysOriginal)
+            ?? UIImage(named: "ExploreHeroImage")?.withRenderingMode(.alwaysOriginal)
         nameLabel.text = city.name
         subtitleLabel.text = city.subtitle
         ratingLabel.text = city.rating

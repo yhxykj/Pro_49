@@ -8,6 +8,8 @@
 import UIKit
 
 final class LiveChatMessageView: UIStackView {
+    var reportTapHandler: (() -> Void)?
+
     private let avatarImageView = UIImageView()
     private let bubbleView = UIView()
     private let contentStackView = UIStackView()
@@ -33,7 +35,7 @@ final class LiveChatMessageView: UIStackView {
     }
 
     func configure(name: String, message: String, avatarImageName: String) {
-        avatarImageView.image = UIImage(named: avatarImageName)?.withRenderingMode(.alwaysOriginal)
+        avatarImageView.image = UserProfileStore.avatarImage(for: avatarImageName)
         nameLabel.text = name
         messageLabel.text = message
         bubbleView.invalidateIntrinsicContentSize()
@@ -82,6 +84,7 @@ final class LiveChatMessageView: UIStackView {
         reportButton.imageView?.contentMode = .scaleAspectFit
         reportButton.accessibilityLabel = "Report"
         reportButton.translatesAutoresizingMaskIntoConstraints = false
+        reportButton.addTarget(self, action: #selector(didTapReport), for: .touchUpInside)
     }
 
     private func setupLayout() {
@@ -107,5 +110,9 @@ final class LiveChatMessageView: UIStackView {
             contentStackView.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -14),
             contentStackView.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -12)
         ])
+    }
+
+    @objc private func didTapReport() {
+        reportTapHandler?()
     }
 }

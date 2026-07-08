@@ -1,0 +1,6 @@
+framework module Pods_Lounit {
+  umbrella header "Pods-Lounit-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -13,30 +13,45 @@ final class NotesViewController: UIViewController {
     private let titleLabel = UILabel()
     private let addButton = UIButton(type: .custom)
     private let tableView = UITableView(frame: .zero, style: .plain)
+    private var entries: [NotesEntry] = []
 
-    private let entries: [NotesEntry] = [
-        NotesEntry(
-            date: "October 3, 2026",
-            text: "Step into Santorini, see the blue and white cliffside huts, and savor the island's unique seafood.",
-            imageNames: ["AuthCityBackground", "ExploreHeroImage", "HomeExplorePromptCard"]
-        ),
-        NotesEntry(
-            date: "October 3, 2026",
-            text: "Stroll through Florence, explore Renaissance architecture, and wander through the Tuscan countryside.",
-            imageNames: ["ExploreHeroImage", "AuthCityBackground", "HomeExplorePromptCard"]
-        )
-    ]
+    private var defaultEntries: [NotesEntry] {
+        if AuthSession.currentMail == AuthSession.testMail {
+            return [
+                NotesEntry(
+                    date: "June 8, 2026",
+                    text: "Test account note: keep today's travel ideas together, compare favorite city routes, and save the moments worth sharing.",
+                    imageNames: ["ExploreCityLisbon", "ExploreCityBarcelona", "ExploreCityVancouver"]
+                )
+            ]
+        }
+
+        return [
+            NotesEntry(
+                date: "October 3, 2026",
+                text: "Step into Santorini, see the blue and white cliffside huts, and savor the island's unique seafood.",
+                imageNames: ["AuthCityBackground", "ExploreHeroImage", "HomeExplorePromptCard"]
+            ),
+            NotesEntry(
+                date: "October 3, 2026",
+                text: "Stroll through Florence, explore Renaissance architecture, and wander through the Tuscan countryside.",
+                imageNames: ["ExploreHeroImage", "AuthCityBackground", "HomeExplorePromptCard"]
+            )
+        ]
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackground()
         setupView()
         setupLayout()
+        reloadEntries()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
+        reloadEntries()
     }
 
     override func viewDidLayoutSubviews() {
@@ -95,10 +110,10 @@ final class NotesViewController: UIViewController {
         view.addSubview(addButton)
 
         NSLayoutConstraint.activate([
-            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 22),
-            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
-            backButton.widthAnchor.constraint(equalToConstant: 32),
-            backButton.heightAnchor.constraint(equalToConstant: 32),
+            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 6),
+            backButton.widthAnchor.constraint(equalToConstant: 44),
+            backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
 
             titleLabel.centerYAnchor.constraint(equalTo: backButton.centerYAnchor),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -110,7 +125,7 @@ final class NotesViewController: UIViewController {
             addButton.widthAnchor.constraint(equalToConstant: 34),
             addButton.heightAnchor.constraint(equalToConstant: 34),
 
-            tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 42),
+            tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -123,6 +138,11 @@ final class NotesViewController: UIViewController {
             return font
         }
         return UIFont(descriptor: descriptor, size: size)
+    }
+
+    private func reloadEntries() {
+        entries = LocalNotesStore.entries() + defaultEntries
+        tableView.reloadData()
     }
 
     @objc private func didTapBack() {

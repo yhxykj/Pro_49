@@ -16,7 +16,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
 
         let window = UIWindow(windowScene: windowScene)
-        window.rootViewController = MainTabBarController()
+        if AuthSession.isLoggedIn {
+            window.rootViewController = MainTabBarController()
+        } else {
+            let navigationController = UINavigationController(rootViewController: ViewController())
+            navigationController.setNavigationBarHidden(true, animated: false)
+            window.rootViewController = navigationController
+        }
         self.window = window
         window.makeKeyAndVisible()
     }

@@ -10,6 +10,12 @@ import UIKit
 final class LiveChatMessageCell: UITableViewCell {
     static let reuseIdentifier = "LiveChatMessageCell"
 
+    var reportTapHandler: (() -> Void)? {
+        didSet {
+            messageView.reportTapHandler = reportTapHandler
+        }
+    }
+
     private let messageView = LiveChatMessageView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -22,6 +28,11 @@ final class LiveChatMessageCell: UITableViewCell {
         super.init(coder: coder)
         setupView()
         setupLayout()
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        reportTapHandler = nil
     }
 
     func configure(name: String, message: String, avatarImageName: String) {

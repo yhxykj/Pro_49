@@ -1,0 +1,69 @@
+
+workflows:
+  ios-native-workflow:
+    name: iOS Native
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+
+    integrations:
+      app_store_connect: Pro_49
+
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.omeagle.wymfs
+
+      vars:
+        BUNDLE_ID: "com.omeagle.wymfs"
+        XCODE_WORKSPACE: "Lounit.xcworkspace"
+        XCODE_SCHEME: "Lounit"
+        APP_STORE_APPLE_ID: 6788643468
+
+      xcode: latest
+      cocoapods: default
+
+    scripts:
+      - name: Install CocoaPods dependencies
+        script: |
+          pod install
+
+      - name: Set up provisioning profiles settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Auto increment BUILD_NUMBER
+        script: |
+          BUILD_NUMBER=$((BUILD_NUMBER + 1))
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $CM_ENV
+
+      - name: Build ipa for distribution
+        script: |
+          cd $CM_BUILD_DIR
+          echo "Building workspace: $XCODE_WORKSPACE"
+          echo "Using scheme: $XCODE_SCHEME"
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+    publishing:
+      email:
+        recipients:
+          - 592730708@qq.com
+        notify:
+          success: true
+          failure: false
+
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - group name 1
+          - group name 2
+        submit_to_app_store: false
+
+

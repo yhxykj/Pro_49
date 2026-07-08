@@ -8,6 +8,11 @@
 import UIKit
 
 final class AuthInputField: UIView {
+    var text: String {
+        get { textField.text ?? "" }
+        set { textField.text = newValue }
+    }
+
     private let titleLabel = UILabel()
     private let fieldContainerView = UIView()
     private let textField = UITextField()
@@ -29,14 +34,19 @@ final class AuthInputField: UIView {
     private func setupView(title: String, iconName: String, isSecure: Bool) {
         titleLabel.text = title
         titleLabel.textColor = .white
-        titleLabel.font = .systemFont(ofSize: 24, weight: .bold)
+        titleLabel.font = .systemFont(ofSize: 20, weight: .bold)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
 
         textField.textColor = .black
-        textField.font = .systemFont(ofSize: 19, weight: .semibold)
+        textField.font = .systemFont(ofSize: 16, weight: .medium)
         textField.isSecureTextEntry = isSecure
         textField.autocapitalizationType = .none
+        textField.autocorrectionType = .no
+        textField.keyboardType = isSecure ? .default : .emailAddress
+        textField.textContentType = isSecure ? .password : .emailAddress
+        textField.returnKeyType = .done
+        textField.delegate = self
         textField.borderStyle = .none
         textField.backgroundColor = .clear
         textField.translatesAutoresizingMaskIntoConstraints = false
@@ -99,5 +109,12 @@ final class AuthInputField: UIView {
         } else {
             textField.text = nil
         }
+    }
+}
+
+extension AuthInputField: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
     }
 }

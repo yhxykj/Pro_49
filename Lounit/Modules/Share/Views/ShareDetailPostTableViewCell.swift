@@ -10,6 +10,8 @@ import UIKit
 final class ShareDetailPostTableViewCell: UITableViewCell {
     static let reuseIdentifier = "ShareDetailPostTableViewCell"
     var avatarTapHandler: (() -> Void)?
+    var likeTapHandler: (() -> Void)?
+    var moreTapHandler: (() -> Void)?
 
     private let cardView = UIView()
     private let avatarImageView = UIImageView()
@@ -17,7 +19,7 @@ final class ShareDetailPostTableViewCell: UITableViewCell {
     private let moreButton = UIButton(type: .custom)
     private let bodyLabel = UILabel()
     private let postImageView = UIImageView()
-    private let likeIconImageView = UIImageView()
+    private let likeButton = UIButton(type: .custom)
     private let likeCountLabel = UILabel()
     private let commentButton = UIButton(type: .custom)
 
@@ -35,7 +37,14 @@ final class ShareDetailPostTableViewCell: UITableViewCell {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        avatarImageView.layer.cornerRadius = avatarImageView.bounds.height / 2
+        avatarImageView.layer.cornerRadius = 21
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        avatarTapHandler = nil
+        likeTapHandler = nil
+        moreTapHandler = nil
     }
 
     func configure(with post: SharePost) {
@@ -43,7 +52,12 @@ final class ShareDetailPostTableViewCell: UITableViewCell {
         nameLabel.text = post.author
         bodyLabel.text = post.text
         postImageView.image = UIImage(named: post.postImageName)?.withRenderingMode(.alwaysOriginal)
-        likeCountLabel.text = post.likeCount
+        likeCountLabel.text = "\(post.likeCount)"
+        likeCountLabel.textColor = post.isLiked
+            ? UIColor(red: 0.94, green: 0.28, blue: 0.38, alpha: 1)
+            : UIColor(red: 0.58, green: 0.58, blue: 0.58, alpha: 1)
+        likeButton.isSelected = post.isLiked
+        likeButton.alpha = 1
     }
 
     private func setupView() {
@@ -58,6 +72,7 @@ final class ShareDetailPostTableViewCell: UITableViewCell {
 
         avatarImageView.contentMode = .scaleAspectFill
         avatarImageView.clipsToBounds = true
+        avatarImageView.layer.cornerRadius = 21
         avatarImageView.isUserInteractionEnabled = true
         avatarImageView.translatesAutoresizingMaskIntoConstraints = false
         avatarImageView.addGestureRecognizer(
@@ -71,6 +86,7 @@ final class ShareDetailPostTableViewCell: UITableViewCell {
         moreButton.setImage(UIImage(named: "ShareMoreButton")?.withRenderingMode(.alwaysOriginal), for: .normal)
         moreButton.imageView?.contentMode = .scaleAspectFit
         moreButton.translatesAutoresizingMaskIntoConstraints = false
+        moreButton.addTarget(self, action: #selector(didTapMore), for: .touchUpInside)
 
         bodyLabel.textColor = .black
         bodyLabel.font = .systemFont(ofSize: 16, weight: .medium)
@@ -82,9 +98,11 @@ final class ShareDetailPostTableViewCell: UITableViewCell {
         postImageView.layer.cornerRadius = 9
         postImageView.translatesAutoresizingMaskIntoConstraints = false
 
-        likeIconImageView.image = UIImage(named: "ShareLikeIcon")?.withRenderingMode(.alwaysOriginal)
-        likeIconImageView.contentMode = .scaleAspectFit
-        likeIconImageView.translatesAutoresizingMaskIntoConstraints = false
+        likeButton.setImage(UIImage(named: "ShareHeartOutlineIcon")?.withRenderingMode(.alwaysOriginal), for: .normal)
+        likeButton.setImage(UIImage(named: "ShareLikeIcon")?.withRenderingMode(.alwaysOriginal), for: .selected)
+        likeButton.imageView?.contentMode = .scaleAspectFit
+        likeButton.translatesAutoresizingMaskIntoConstraints = false
+        likeButton.addTarget(self, action: #selector(didTapLike), for: .touchUpInside)
 
         likeCountLabel.textColor = UIColor(red: 0.58, green: 0.58, blue: 0.58, alpha: 1)
         likeCountLabel.font = .systemFont(ofSize: 18, weight: .regular)
@@ -102,7 +120,7 @@ final class ShareDetailPostTableViewCell: UITableViewCell {
         cardView.addSubview(moreButton)
         cardView.addSubview(bodyLabel)
         cardView.addSubview(postImageView)
-        cardView.addSubview(likeIconImageView)
+        cardView.addSubview(likeButton)
         cardView.addSubview(likeCountLabel)
         cardView.addSubview(commentButton)
 
@@ -135,16 +153,16 @@ final class ShareDetailPostTableViewCell: UITableViewCell {
             postImageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -10),
             postImageView.heightAnchor.constraint(equalTo: postImageView.widthAnchor, multiplier: 0.50),
 
-            likeIconImageView.topAnchor.constraint(equalTo: postImageView.bottomAnchor, constant: 16),
-            likeIconImageView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 18),
-            likeIconImageView.widthAnchor.constraint(equalToConstant: 36),
-            likeIconImageView.heightAnchor.constraint(equalTo: likeIconImageView.widthAnchor),
+            likeButton.topAnchor.constraint(equalTo: postImageView.bottomAnchor, constant: 16),
+            likeButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 18),
+            likeButton.widthAnchor.constraint(equalToConstant: 36),
+            likeButton.heightAnchor.constraint(equalTo: likeButton.widthAnchor),
 
-            likeCountLabel.leadingAnchor.constraint(equalTo: likeIconImageView.trailingAnchor, constant: 8),
-            likeCountLabel.centerYAnchor.constraint(equalTo: likeIconImageView.centerYAnchor),
+            likeCountLabel.leadingAnchor.constraint(equalTo: likeButton.trailingAnchor, constant: 8),
+            likeCountLabel.centerYAnchor.constraint(equalTo: likeButton.centerYAnchor),
 
             commentButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
-            commentButton.centerYAnchor.constraint(equalTo: likeIconImageView.centerYAnchor),
+            commentButton.centerYAnchor.constraint(equalTo: likeButton.centerYAnchor),
             commentButton.widthAnchor.constraint(equalToConstant: 32),
             commentButton.heightAnchor.constraint(equalTo: commentButton.widthAnchor),
             commentButton.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -18)
@@ -153,5 +171,13 @@ final class ShareDetailPostTableViewCell: UITableViewCell {
 
     @objc private func didTapAvatar() {
         avatarTapHandler?()
+    }
+
+    @objc private func didTapLike() {
+        likeTapHandler?()
+    }
+
+    @objc private func didTapMore() {
+        moreTapHandler?()
     }
 }

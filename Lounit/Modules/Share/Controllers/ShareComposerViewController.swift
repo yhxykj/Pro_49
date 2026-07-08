@@ -149,8 +149,8 @@ final class ShareComposerViewController: UIViewController {
         addPhotoContainerView.addSubview(addPhotoButton)
 
         NSLayoutConstraint.activate([
-            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 36),
-            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 28),
+            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 6),
             backButton.widthAnchor.constraint(equalToConstant: 44),
             backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
 
@@ -245,7 +245,11 @@ final class ShareComposerViewController: UIViewController {
             return
         }
 
-        let alertController = UIAlertController(title: nil, message: "Published successfully.", preferredStyle: .alert)
+        let alertController = UIAlertController(
+            title: "Published successfully",
+            message: "Your post is under review.",
+            preferredStyle: .alert
+        )
         alertController.addAction(
             UIAlertAction(title: "OK", style: .default) { [weak self] _ in
                 self?.navigationController?.popViewController(animated: true)

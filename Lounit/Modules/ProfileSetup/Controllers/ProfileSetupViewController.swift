@@ -47,7 +47,9 @@ final class ProfileSetupViewController: UIViewController {
         }
 
         profileSetupView.completeHandler = { [weak self] in
-            self?.navigationController?.setViewControllers([MainTabBarController()], animated: true)
+            guard let self else { return }
+            UserProfileStore.updateCurrentProfile(name: self.profileSetupView.enteredName)
+            self.navigationController?.setViewControllers([MainTabBarController()], animated: true)
         }
     }
 }

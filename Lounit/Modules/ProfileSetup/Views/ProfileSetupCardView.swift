@@ -10,12 +10,16 @@ import UIKit
 final class ProfileSetupCardView: UIView {
     var backHandler: (() -> Void)?
     var completeHandler: (() -> Void)?
+    var enteredName: String {
+        nameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
 
     private let backButton = UIButton(type: .custom)
     private let tourView = AuthTourBadgeView()
     private let cardView = UIView()
     private let titleImageView = UIImageView()
     private let avatarView = UIView()
+    private let avatarImageView = UIImageView()
     private let avatarSwitchButton = UIButton(type: .custom)
     private let nameLabel = UILabel()
     private let nameFieldContainerView = UIView()
@@ -68,7 +72,13 @@ final class ProfileSetupCardView: UIView {
     private func setupAvatar() {
         avatarView.backgroundColor = .white
         avatarView.layer.cornerRadius = 60
+        avatarView.clipsToBounds = true
         avatarView.translatesAutoresizingMaskIntoConstraints = false
+
+        avatarImageView.image = UserProfileStore.avatarImage(for: UserProfileStore.currentProfile.avatarImageName)
+        avatarImageView.contentMode = .scaleAspectFill
+        avatarImageView.clipsToBounds = true
+        avatarImageView.translatesAutoresizingMaskIntoConstraints = false
 
         avatarSwitchButton.setImage(UIImage(named: "ProfileAvatarSwitchIcon")?.withRenderingMode(.alwaysOriginal), for: .normal)
         avatarSwitchButton.imageView?.contentMode = .scaleAspectFit
@@ -91,6 +101,8 @@ final class ProfileSetupCardView: UIView {
         nameTextField.font = .systemFont(ofSize: 18, weight: .semibold)
         nameTextField.borderStyle = .none
         nameTextField.backgroundColor = .clear
+        nameTextField.text = UserProfileStore.currentProfile.name
+        nameTextField.returnKeyType = .done
         nameTextField.translatesAutoresizingMaskIntoConstraints = false
 
     }
@@ -114,13 +126,14 @@ final class ProfileSetupCardView: UIView {
         cardView.addSubview(nameFieldContainerView)
         cardView.addSubview(createAccountButton)
 
+        avatarView.addSubview(avatarImageView)
         nameFieldContainerView.addSubview(nameTextField)
 
         NSLayoutConstraint.activate([
-            backButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 10),
-            backButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
-            backButton.widthAnchor.constraint(equalToConstant: 32),
-            backButton.heightAnchor.constraint(equalToConstant: 32),
+            backButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
+            backButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 6),
+            backButton.widthAnchor.constraint(equalToConstant: 44),
+            backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
 
             tourView.bottomAnchor.constraint(equalTo: cardView.topAnchor, constant: 52),
             tourView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -28),
@@ -141,6 +154,11 @@ final class ProfileSetupCardView: UIView {
             avatarView.centerXAnchor.constraint(equalTo: cardView.centerXAnchor),
             avatarView.widthAnchor.constraint(equalToConstant: 120),
             avatarView.heightAnchor.constraint(equalToConstant: 120),
+
+            avatarImageView.topAnchor.constraint(equalTo: avatarView.topAnchor),
+            avatarImageView.leadingAnchor.constraint(equalTo: avatarView.leadingAnchor),
+            avatarImageView.trailingAnchor.constraint(equalTo: avatarView.trailingAnchor),
+            avatarImageView.bottomAnchor.constraint(equalTo: avatarView.bottomAnchor),
 
             avatarSwitchButton.trailingAnchor.constraint(equalTo: avatarView.trailingAnchor, constant: 8),
             avatarSwitchButton.bottomAnchor.constraint(equalTo: avatarView.bottomAnchor, constant: 8),

@@ -7,12 +7,6 @@
 
 import UIKit
 
-struct ExploreCity {
-    let name: String
-    let subtitle: String
-    let rating: String
-}
-
 final class ExploreViewController: UIViewController {
     private let heroImageView = UIImageView()
     private let backButton = UIButton(type: .custom)
@@ -21,13 +15,7 @@ final class ExploreViewController: UIViewController {
     private let titleLabel = UILabel()
     private let tableView = UITableView(frame: .zero, style: .plain)
 
-    private let cities: [ExploreCity] = [
-        ExploreCity(name: "New York, USA", subtitle: "The city that never sleeps", rating: "4.8"),
-        ExploreCity(name: "New York, USA", subtitle: "The city that never sleeps", rating: "4.8"),
-        ExploreCity(name: "New York, USA", subtitle: "The city that never sleeps", rating: "4.8"),
-        ExploreCity(name: "New York, USA", subtitle: "The city that never sleeps", rating: "4.8"),
-        ExploreCity(name: "New York, USA", subtitle: "The city that never sleeps", rating: "4.8")
-    ]
+    private let cities = ExploreCityDataSource.cities
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -93,10 +81,10 @@ final class ExploreViewController: UIViewController {
             heroImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             heroImageView.heightAnchor.constraint(equalToConstant: 360),
 
-            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
-            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-            backButton.widthAnchor.constraint(equalToConstant: 32),
-            backButton.heightAnchor.constraint(equalToConstant: 32),
+            backButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 6),
+            backButton.widthAnchor.constraint(equalToConstant: 44),
+            backButton.heightAnchor.constraint(equalTo: backButton.widthAnchor),
 
             heroTitleImageView.topAnchor.constraint(equalTo: view.topAnchor, constant: 138),
             heroTitleImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -142,7 +130,7 @@ extension ExploreViewController: UITableViewDataSource {
 
 extension ExploreViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let viewController = CityDetailViewController()
+        let viewController = CityDetailViewController(city: cities[indexPath.row])
         viewController.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(viewController, animated: true)
     }
