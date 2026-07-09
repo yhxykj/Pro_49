@@ -228,7 +228,11 @@ final class MyProfileViewController: UIViewController {
     }
 
     private func deleteAccount() {
+        let deletedMail = AuthSession.currentMail
         AuthLocalDataStore.clearAll()
+        if let deletedMail {
+            AuthSession.markDeleted(mail: deletedMail)
+        }
         showLoginFlow()
     }
 

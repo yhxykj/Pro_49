@@ -12,6 +12,7 @@ enum AuthSession {
     private static let testPassword = "123456"
     private static let loginStateKey = "lounit.auth.isLoggedIn"
     private static let currentMailKey = "lounit.auth.currentMail"
+    private static let deletedMailsKey = "lounit.auth.deletedMails"
 
     static var isLoggedIn: Bool {
         UserDefaults.standard.bool(forKey: loginStateKey)
@@ -22,18 +23,41 @@ enum AuthSession {
     }
 
     static func canUseTestAccount(mail: String, password: String) -> Bool {
-        mail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == testMail
-            && password == testPassword
+        normalizedMail(mail) == testMail && password == testPassword
+    }
+
+    static func isDeleted(mail: String) -> Bool {
+        deletedMails.contains(normalizedMail(mail))
+    }
+
+    static func markDeleted(mail: String) {
+        var mails = deletedMails
+        mails.insert(normalizedMail(mail))
+        UserDefaults.standard.set(Array(mails), forKey: deletedMailsKey)
+    }
+
+    static func reactivate(mail: String) {
+        var mails = deletedMails
+        mails.remove(normalizedMail(mail))
+        UserDefaults.standard.set(Array(mails), forKey: deletedMailsKey)
     }
 
     static func start(mail: String = testMail) {
         UserDefaults.standard.set(true, forKey: loginStateKey)
-        UserDefaults.standard.set(mail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(), forKey: currentMailKey)
+        UserDefaults.standard.set(normalizedMail(mail), forKey: currentMailKey)
     }
 
     static func end() {
         UserDefaults.standard.removeObject(forKey: loginStateKey)
         UserDefaults.standard.removeObject(forKey: currentMailKey)
+    }
+
+    private static var deletedMails: Set<String> {
+        Set(UserDefaults.standard.stringArray(forKey: deletedMailsKey) ?? [])
+    }
+
+    private static func normalizedMail(_ mail: String) -> String {
+        mail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     }
 }
 
@@ -160,6 +184,11 @@ final class AuthAccountViewController: UIViewController {
             return
         }
 
+        guard !AuthSession.isDeleted(mail: mail) else {
+            showDeletedAccountAlert()
+            return
+        }
+
         AuthSession.start(mail: mail)
         enterMainApp()
     }
@@ -170,6 +199,7 @@ final class AuthAccountViewController: UIViewController {
             return
         }
 
+        AuthSession.reactivate(mail: mail)
         AuthSession.start(mail: mail)
         navigationController?.pushViewController(ProfileSetupViewController(), animated: true)
     }
@@ -190,6 +220,10 @@ final class AuthAccountViewController: UIViewController {
 
     private func showInvalidAccountAlert() {
         showAuthAlert(message: "Invalid test account. Please use \(AuthSession.testMail).")
+    }
+
+    private func showDeletedAccountAlert() {
+        showAuthAlert(message: "This account has been deleted. Please register again to continue.")
     }
 
     private func showAuthAlert(message: String) {
